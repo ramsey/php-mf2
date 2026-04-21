@@ -368,9 +368,7 @@ EOT;
 	}
 
 	public function testApplyTransformationToSrcset() {
-		$transformation = function ($url) {
-			return 'https://example.com/' . ltrim($url, '/');
-		};
+		$transformation = (fn($url) => 'https://example.com/' . ltrim($url, '/'));
 
 		// Example from https://developers.whatwg.org/edits.html#attr-img-srcset
 		$srcset = 'banner-HD.jpeg 2x, banner-phone.jpeg 100w, banner-phone-HD.jpeg 100w 2x';
