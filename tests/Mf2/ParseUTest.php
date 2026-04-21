@@ -71,10 +71,10 @@ class ParseUTest extends TestCase {
 		$output = $parser->parse();
 
 		$this->assertArrayHasKey('photo', $output['items'][0]['properties']);
-		$result = array(
+		$result = [
 			'value' => 'https://example.com/someimage.png',
 			'alt' => 'Test Alt'
-		);
+		];
 		$this->assertEquals( $result, $output['items'][0]['properties']['photo'][0]);
 	}
 

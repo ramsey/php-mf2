@@ -8,7 +8,7 @@ final class TestSuiteParser extends \Mf2\Parser
 {
     /** Actually textContent from before the whitespace normalisation merge (e8da04f93d548d26287a8980eca4216639cbc61d) */
     public function textContent(\DOMElement $el, $dummy=false) {
-        $excludeTags = array('noframe', 'noscript', 'script', 'style', 'frames', 'frameset');
+        $excludeTags = ['noframe', 'noscript', 'script', 'style', 'frames', 'frameset'];
 
         if (isset($el->tagName) and in_array(strtolower($el->tagName), $excludeTags)) {
             return '';
@@ -125,25 +125,25 @@ class MicroformatsTestSuiteTest extends TestCase
         // Ripped out of the test-suite.php code:
         $finder = new \RegexIterator(
             new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(
-                dirname(__FILE__) . '/../../vendor/' . $subFolder,
+                __DIR__ . '/../../vendor/' . $subFolder,
                 \RecursiveDirectoryIterator::SKIP_DOTS
             )),
             '/^.+\.html$/i',
             \RecursiveRegexIterator::GET_MATCH
         );
         // Build the array of separate tests:
-        $tests = array();
+        $tests = [];
         foreach ($finder as $key => $value) {
             $dir = realpath(pathinfo($key, PATHINFO_DIRNAME));
             $testname = substr($dir, strpos($dir, $subFolder) + strlen($subFolder) + 1) . '/' . pathinfo($key, PATHINFO_FILENAME);
             $test = pathinfo($key, PATHINFO_BASENAME);
             $result = pathinfo($key, PATHINFO_FILENAME) . '.json';
             if (is_file($dir . '/' . $result)) {
-                $tests[$testname] = array(
+                $tests[$testname] = [
                     'input' => file_get_contents($dir . '/' . $test),
                     'expectedOutput' => file_get_contents($dir . '/' . $result),
                     'name' => $testname
-                );
+                ];
             }
         }
         return $tests;

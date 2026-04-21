@@ -69,9 +69,9 @@ function fetch($url, $convertClassic = true, &$curlInfo=null) {
 	curl_setopt($ch, CURLOPT_HEADER, 0);
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 	curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+	curl_setopt($ch, CURLOPT_HTTPHEADER, [
 		'Accept: text/html'
-	));
+	]);
 	$html = curl_exec($ch);
 	$info = $curlInfo = curl_getinfo($ch);
 	curl_close($ch);
@@ -128,10 +128,10 @@ function unicodeTrim($str) {
  * @return string|array The prefixed name of the first microfomats class found or false
  */
 function mfNamesFromClass($class, $prefix='h-') {
-	$class = str_replace(array(' ', '	', "\n"), ' ', $class);
+	$class = str_replace([' ', '	', "\n"], ' ', $class);
 	$classes = explode(' ', $class);
 	$classes = preg_grep('#^(h|p|u|dt|e)-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$#', $classes);
-	$matches = array();
+	$matches = [];
 
 	foreach ($classes as $classname) {
 		$compare_classname = ' ' . $classname;
@@ -163,8 +163,8 @@ function classHasMf2RootClassname($class) {
  * @return array
  */
 function nestedMfPropertyNamesFromClass($class) {
-	$prefixes = array('p-', 'u-', 'dt-', 'e-');
-	$propertyNames = array();
+	$prefixes = ['p-', 'u-', 'dt-', 'e-'];
+	$propertyNames = [];
 
 	foreach ($prefixes as $prefix) {
 		$classes = mfNamesFromClass($class, $prefix);
@@ -368,7 +368,7 @@ class Parser {
 			}
 				
 			if (class_exists('Masterminds\\HTML5')) {
-					$doc = new \Masterminds\HTML5(array('disable_html_ns' => true));
+					$doc = new \Masterminds\HTML5(['disable_html_ns' => true]);
 					$doc = $doc->loadHTML($input);
 			} else {
 				$doc = new DOMDocument();
@@ -418,7 +418,7 @@ class Parser {
 
 	private function elementPrefixParsed(\DOMElement $e, $prefix) {
 		if (!$this->parsed->contains($e))
-			$this->parsed->attach($e, array());
+			$this->parsed->attach($e, []);
 
 		$prefixes = $this->parsed[$e];
 		$prefixes[] = $prefix;
@@ -470,7 +470,7 @@ class Parser {
 			if ($child->hasAttribute('src'))
 				$child->setAttribute('src', $this->resolveUrl($child->getAttribute('src')));
 			if ($child->hasAttribute('srcset'))
-				$child->setAttribute('srcset', applySrcsetUrlTransformation($child->getAttribute('href'), array($this, 'resolveUrl')));
+				$child->setAttribute('srcset', applySrcsetUrlTransformation($child->getAttribute('href'), [$this, 'resolveUrl']));
 			if ($child->hasAttribute('data'))
 				$child->setAttribute('data', $this->resolveUrl($child->getAttribute('data')));
 		}
@@ -495,10 +495,10 @@ class Parser {
 			$output = '';
 			foreach ($input->childNodes as $child) {
 					if ($child->nodeType === XML_TEXT_NODE) {
-							$output .= str_replace(array("\t", "\n", "\r") , ' ', $child->textContent);
+							$output .= str_replace(["\t", "\n", "\r"] , ' ', $child->textContent);
 					} else if ($child->nodeType === XML_ELEMENT_NODE) {
 							$tagName = strtoupper($child->tagName);
-							if (in_array($tagName, array('SCRIPT', 'STYLE'))) {
+							if (in_array($tagName, ['SCRIPT', 'STYLE'])) {
 									continue;
 							} else if ($tagName === 'IMG') {
 									if ($child->hasAttribute('alt')) {
@@ -648,7 +648,7 @@ class Parser {
 			$pValue = $p->getAttribute('alt');
 		} elseif (($p->tagName == 'abbr' or $p->tagName == 'link') and $p->hasAttribute('title')) {
 			$pValue = $p->getAttribute('title');
-		} elseif (in_array($p->tagName, array('data', 'input')) and $p->hasAttribute('value')) {
+		} elseif (in_array($p->tagName, ['data', 'input']) and $p->hasAttribute('value')) {
 			$pValue = $p->getAttribute('value');
 		} else {
 			$pValue = $this->textContent($p);
@@ -669,7 +669,7 @@ class Parser {
 			$uValue = $u->getAttribute('href');
 		} elseif ( $u->tagName == 'img' and $u->hasAttribute('src') ) {
 			$uValue = $this->parseImg($u);
-		} elseif (in_array($u->tagName, array('audio', 'video', 'source', 'iframe')) and $u->hasAttribute('src')) {
+		} elseif (in_array($u->tagName, ['audio', 'video', 'source', 'iframe']) and $u->hasAttribute('src')) {
 			$uValue = $u->getAttribute('src');
 		} elseif ($u->tagName == 'video' and !$u->hasAttribute('src') and $u->hasAttribute('poster')) {
 			$uValue = $u->getAttribute('poster');
@@ -679,7 +679,7 @@ class Parser {
 				$uValue = $classTitle;
 		} elseif (($u->tagName == 'abbr' or $u->tagName == 'link') and $u->hasAttribute('title')) {
 			$uValue = $u->getAttribute('title');
-		} elseif (in_array($u->tagName, array('data', 'input')) and $u->hasAttribute('value')) {
+		} elseif (in_array($u->tagName, ['data', 'input']) and $u->hasAttribute('value')) {
 			$uValue = $u->getAttribute('value');
 		} else {
 			$uValue = $this->textContent($u);
@@ -696,14 +696,14 @@ class Parser {
 	 * @param string $impliedTimezone
 	 * @return string The datetime string found
 	 */
-	public function parseDT(\DOMElement $dt, &$dates = array(), &$impliedTimezone = null) {
+	public function parseDT(\DOMElement $dt, &$dates = [], &$impliedTimezone = null) {
 		// Check for value-class pattern
 		$valueClassChildren = $this->xpath->query('./*[contains(concat(" ", normalize-space(@class), " "), " value ") or contains(concat(" ", normalize-space(@class), " "), " value-title ")]', $dt);
 		$dtValue = false;
 
 		if ($valueClassChildren->length > 0) {
 			// They’re using value-class
-			$dateParts = array();
+			$dateParts = [];
 
 			foreach ($valueClassChildren as $e) {
 				if (strstr(' ' . $e->getAttribute('class') . ' ', ' value-title ')) {
@@ -817,7 +817,7 @@ class Parser {
 				if (!empty($alt)) {
 					$dtValue = $alt;
 				}
-			} elseif (in_array($dt->tagName, array('data'))) {
+			} elseif (in_array($dt->tagName, ['data'])) {
 				// Use @value, otherwise innertext
 				// Is it an entire dt?
 				$value = $dt->getAttribute('value');
@@ -919,10 +919,10 @@ class Parser {
 			}
 		}
 
-		$return = array(
+		$return = [
 			'html' => unicodeTrim($html),
 			'value' => $this->textContent($e),
-		);
+		];
 
 		if($this->lang) {
 			// Language
@@ -962,10 +962,10 @@ class Parser {
 		}
 
 		// Initalise var to store the representation in
-		$return = array();
-		$children = array();
-		$dates = array();
-		$prefixes = array();
+		$return = [];
+		$children = [];
+		$dates = [];
+		$prefixes = [];
 		$impliedTimezone = null;
 
 		if($e->tagName == 'area') {
@@ -1021,7 +1021,7 @@ class Parser {
 			$this->elementPrefixParsed($u, 'u');
 		}
 
-		$temp_dates = array();
+		$temp_dates = [];
 
 		// Handle dt-*
 		foreach ($this->xpath->query('.//*[contains(concat(" ", normalize-space(@class)), " dt-")]', $e) as $dt) {
@@ -1095,7 +1095,7 @@ class Parser {
 			} elseif ($e->tagName === 'abbr' && $e->hasAttribute('title')) {
 				$name = $e->getAttribute('title');
 			} else {
-				$xpaths = array(
+				$xpaths = [
 					// .h-x>img:only-child[alt]:not([alt=""]):not[.h-*]
 					'./img[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and @alt and string-length(@alt) != 0]',
 					// .h-x>area:only-child[alt]:not([alt=""]):not[.h-*]
@@ -1108,7 +1108,7 @@ class Parser {
 					'./*[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and count(*) = 1]/area[not(contains(concat(" ", @class), " h-")) and @alt and string-length(@alt) != 0]',
 					// .h-x>:only-child:not[.h-*]>abbr:only-child[title]:not([title=""]):not[.h-*]
 					'./*[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and count(*) = 1]/abbr[not(contains(concat(" ", @class), " h-")) and @title and string-length(@title) != 0]'
-				);
+				];
 				foreach ($xpaths as $xpath) {
 					$nameElement = $this->xpath->query($xpath, $e);
 					if ($nameElement !== false && $nameElement->length === 1) {
@@ -1143,7 +1143,7 @@ class Parser {
 			if (($e->tagName === 'a' || $e->tagName === 'area') && $e->hasAttribute('href')) {
 				$return['url'][] = $this->resolveUrl($e->getAttribute('href'));
 			} else {
-				$xpaths = array(
+				$xpaths = [
 					// .h-x>a[href]:only-of-type:not[.h-*]
 					'./a[not(contains(concat(" ", @class), " h-")) and count(../a) = 1 and @href]',
 					// .h-x>area[href]:only-of-type:not[.h-*]
@@ -1152,7 +1152,7 @@ class Parser {
 					'./*[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and count(a) = 1]/a[not(contains(concat(" ", @class), " h-")) and @href]',
 					// .h-x>:only-child:not[.h-*]>area[href]:only-of-type:not[.h-*]
 					'./*[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and count(area) = 1]/area[not(contains(concat(" ", @class), " h-")) and @href]'
-				);
+				];
 				foreach ($xpaths as $xpath) {
 					$url = $this->xpath->query($xpath, $e);
 					if ($url !== false && $url->length === 1) {
@@ -1173,10 +1173,10 @@ class Parser {
 		}
 
 		// Phew. Return the final result.
-		$parsed = array(
+		$parsed = [
 			'type' => $mfTypes,
 			'properties' => $return
-		);
+		];
 
 		if(trim($e->getAttribute('id')) !== '') {
 			$parsed['id'] = trim($e->getAttribute("id"));
@@ -1218,7 +1218,7 @@ class Parser {
 			return $this->resolveUrl($e->getAttribute('data'));
 		}
 
-		$xpaths = array(
+		$xpaths = [
 			// .h-x>img[src]:only-of-type:not[.h-*]
 			'./img[not(contains(concat(" ", @class), " h-")) and count(../img) = 1 and @src]',
 			// .h-x>object[data]:only-of-type:not[.h-*]
@@ -1227,7 +1227,7 @@ class Parser {
 			'./*[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and count(img) = 1]/img[not(contains(concat(" ", @class), " h-")) and @src]',
 			// .h-x>:only-child:not[.h-*]>object[data]:only-of-type:not[.h-*]
 			'./*[not(contains(concat(" ", @class), " h-")) and count(../*) = 1 and count(object) = 1]/object[not(contains(concat(" ", @class), " h-")) and @data]',
-		);
+		];
 
 		foreach ($xpaths as $path) {
 			$els = $this->xpath->query($path, $e);
@@ -1258,9 +1258,9 @@ class Parser {
 	 * @return array|stdClass
 	 */
 	public function parseRelsAndAlternates() {
-		$rels = array();
-		$rel_urls = array();
-		$alternates = array();
+		$rels = [];
+		$rel_urls = [];
+		$alternates = [];
 
 		// Iterate through all a, area and link elements with rel attributes
 		foreach ($this->xpath->query('//a[@rel and @href] | //link[@rel and @href] | //area[@rel and @href]') as $hyperlink) {
@@ -1273,7 +1273,7 @@ class Parser {
 			// Resolve the href
 			$href = $this->resolveUrl($hyperlink->getAttribute('href'));
 
-			$rel_attributes = array();
+			$rel_attributes = [];
 
 			if ($hyperlink->hasAttribute('media')) {
 				$rel_attributes['media'] = $hyperlink->getAttribute('media');
@@ -1300,24 +1300,24 @@ class Parser {
 				if (in_array('alternate', $linkRels)) {
 					$alternates[] = array_merge(
 						$rel_attributes,
-						array(
+						[
 							'url' => $href,
-							'rel' => implode(' ', array_diff($linkRels, array('alternate')))
-						)
+							'rel' => implode(' ', array_diff($linkRels, ['alternate']))
+						]
 					);
 				}
 			}
 
 			foreach ($linkRels as $rel) {
 				if (!array_key_exists($rel, $rels)) {
-					$rels[$rel] = array($href);
+					$rels[$rel] = [$href];
 				} elseif (!in_array($href, $rels[$rel])) {
 					$rels[$rel][] = $href;
 				}
 			}
 
 			if (!array_key_exists($href, $rel_urls)) {
-				$rel_urls[$href] = array('rels' => array());
+				$rel_urls[$href] = ['rels' => []];
 			}
 
 			// Add the attributes collected only if they were not already set
@@ -1347,7 +1347,7 @@ class Parser {
 			$rel_urls = new stdClass();
 		}
 
-		return array($rels, $rel_urls, $alternates);
+		return [$rels, $rel_urls, $alternates];
 	}
 
 	/**
@@ -1390,11 +1390,11 @@ class Parser {
 		// Parse rels
 		list($rels, $rel_urls, $alternates) = $this->parseRelsAndAlternates();
 
-		$top = array(
+		$top = [
 			'items' => array_values(array_filter($mfs)),
 			'rels' => $rels,
 			'rel-urls' => $rel_urls,
-		);
+		];
 
 		if ($this->enableAlternates && count($alternates)) {
 			$top['alternates'] = $alternates;
@@ -1412,7 +1412,7 @@ class Parser {
 	 * @return array
 	 */
 	public function parse_recursive(DOMElement $context = null, $depth = 0) {
-		$mfs = array();
+		$mfs = [];
 		$mfElements = $this->getRootMF($context);
 
 		foreach ($mfElements as $node) {
@@ -1465,7 +1465,7 @@ class Parser {
 								$prefixSpecificResult['value'] = (!is_array($result['properties']) || empty($result['properties']['url'])) ? $this->parseU($node) : reset($result['properties']['url']);
 							} elseif (in_array('dt-', $prefixes)) {
 								$parsed_property = $this->parseDT($node);
-								$prefixSpecificResult['value'] = ($parsed_property) ? $parsed_property : '';
+								$prefixSpecificResult['value'] = $parsed_property ?: '';
 							}
 							$prefixSpecificResult['value'] = is_array($prefixSpecificResult['value']) ? $prefixSpecificResult['value']['value'] : $prefixSpecificResult['value'];
 
@@ -1506,7 +1506,7 @@ class Parser {
 		$matches = $this->xpath->query("//*[@id='{$id}']");
 
 		if (empty($matches))
-			return array('items' => array(), 'rels' => array(), 'alternates' => array());
+			return ['items' => [], 'rels' => [], 'alternates' => []];
 
 		return $this->parse($convertClassic, $matches->item(0));
 	}
@@ -1518,9 +1518,9 @@ class Parser {
 	 */
 	public function getRootMF(DOMElement $context = null) {
 		// start with mf2 root class name xpath
-		$xpaths = array(
+		$xpaths = [
 			'(php:function("\\Mf2\\classHasMf2RootClassname", normalize-space(@class)))'
-		);
+		];
 
 		// add mf1 root class names
 		foreach ( $this->classicRootMap as $old => $new ) {
@@ -1548,9 +1548,9 @@ class Parser {
 	public function backcompat(DOMElement $el, $context = '', $isParentMf2 = false) {
 
 		if ( $context ) {
-			$mf1Classes = array($context);
+			$mf1Classes = [$context];
 		} else {
-			$class = str_replace(array("\t", "\n"), ' ', $el->getAttribute('class'));
+			$class = str_replace(["\t", "\n"], ' ', $el->getAttribute('class'));
 			$classes = array_filter(explode(' ', $class));
 			$mf1Classes = array_intersect($classes, array_keys($this->classicRootMap));
 		}
@@ -1569,7 +1569,7 @@ class Parser {
 					if ( $rel_bookmark->length ) {
 						foreach ( $rel_bookmark as $tempEl ) {
 							$this->addMfClasses($tempEl, 'u-url');
-							$this->addUpgraded($tempEl, array('bookmark'));
+							$this->addUpgraded($tempEl, ['bookmark']);
 						}
 					}
 				break;
@@ -1586,7 +1586,7 @@ class Parser {
 							if ( !$this->hasRootMf2($tempEl) ) {
 								$this->backcompat($tempEl, 'hreview-aggregate');
 								$this->addMfClasses($tempEl, 'p-review h-review-aggregate');
-								$this->addUpgraded($tempEl, array('review hreview-aggregate'));
+								$this->addUpgraded($tempEl, ['review hreview-aggregate']);
 							}
 						}
 					}
@@ -1598,7 +1598,7 @@ class Parser {
 							if ( !$this->hasRootMf2($tempEl) ) {
 								$this->backcompat($tempEl, 'hreview');
 								$this->addMfClasses($tempEl, 'p-review h-review');
-								$this->addUpgraded($tempEl, array('review hreview'));
+								$this->addUpgraded($tempEl, ['review hreview']);
 							}
 						}
 					}
@@ -1614,7 +1614,7 @@ class Parser {
 							if ( !$this->hasRootMf2($tempEl) ) {
 								$this->backcompat($tempEl, 'vcard');
 								$this->addMfClasses($tempEl, 'p-item h-card');
-								$this->addUpgraded($tempEl, array('item', 'vcard'));
+								$this->addUpgraded($tempEl, ['item', 'vcard']);
 							}
 						}
 					}
@@ -1626,7 +1626,7 @@ class Parser {
 							if ( !$this->hasRootMf2($tempEl) ) {
 								$this->addMfClasses($tempEl, 'p-item h-event');
 								$this->backcompat($tempEl, 'vevent');
-								$this->addUpgraded($tempEl, array('item', 'vevent'));
+								$this->addUpgraded($tempEl, ['item', 'vevent']);
 							}
 						}
 					}
@@ -1638,7 +1638,7 @@ class Parser {
 							if ( !$this->hasRootMf2($tempEl) ) {
 								$this->addMfClasses($tempEl, 'p-item h-product');
 								$this->backcompat($tempEl, 'hproduct');
-								$this->addUpgraded($tempEl, array('item', 'hproduct'));
+								$this->addUpgraded($tempEl, ['item', 'hproduct']);
 							}
 						}
 					}
@@ -1648,7 +1648,7 @@ class Parser {
 					if ( $rel_self_bookmark->length ) {
 						foreach ( $rel_self_bookmark as $tempEl ) {
 							$this->addMfClasses($tempEl, 'u-url');
-							$this->addUpgraded($tempEl, array('self', 'bookmark'));
+							$this->addUpgraded($tempEl, ['self', 'bookmark']);
 						}
 					}
 
@@ -1673,7 +1673,7 @@ class Parser {
 							if ( !$this->hasRootMf2($tempEl) ) {
 								$this->addMfClasses($tempEl, 'p-location h-card');
 								$this->backcompat($tempEl, 'vcard');
-								$this->addUpgraded($tempEl, array('location', 'vcard'));
+								$this->addUpgraded($tempEl, ['location', 'vcard']);
 							}
 						}
 					}
@@ -1718,7 +1718,7 @@ class Parser {
 	 */
 	public function addUpgraded(DOMElement $el, $property) {
 		if ( !is_array($property) ) {
-			$property = array($property);
+			$property = [$property];
 		}
 
 		// add element to list of upgraded elements
@@ -1736,7 +1736,7 @@ class Parser {
 	 * @param string $classes
 	 */
 	public function addMfClasses(DOMElement $el, $classes) {
-		$existingClasses = str_replace(array("\t", "\n"), ' ', $el->getAttribute('class'));
+		$existingClasses = str_replace(["\t", "\n"], ' ', $el->getAttribute('class'));
 		$existingClasses = array_filter(explode(' ', $existingClasses));
 
 		$addClasses = array_diff(explode(' ', $classes), $existingClasses);
@@ -1751,7 +1751,7 @@ class Parser {
 	 * @param DOMElement $el
 	 */
 	public function hasRootMf2(\DOMElement $el) {
-		$class = str_replace(array("\t", "\n"), ' ', $el->getAttribute('class'));
+		$class = str_replace(["\t", "\n"], ' ', $el->getAttribute('class'));
 
 		// Check for valid mf2 root classnames, not just any classname with a h- prefix.
 		return count(mfNamesFromClass($class, 'h-')) > 0;
@@ -1806,7 +1806,7 @@ class Parser {
 	 * Classic Root Classname map
 	 * @var array
 	 */
-	public $classicRootMap = array(
+	public $classicRootMap = [
 		'vcard' => 'h-card',
 		'hfeed' => 'h-feed',
 		'hentry' => 'h-entry',
@@ -1818,395 +1818,395 @@ class Parser {
 		'hproduct' => 'h-product',
 		'adr' => 'h-adr',
 		'geo' => 'h-geo'
-	);
+	];
 
 	/**
 	 * Mapping of mf1 properties to mf2 and the context they're parsed with
 	 * @var array
 	 */
-	public $classicPropertyMap = array(
-		'vcard' => array(
-			'fn' => array(
+	public $classicPropertyMap = [
+		'vcard' => [
+			'fn' => [
 				'replace' => 'p-name'
-			),
-			'honorific-prefix' => array(
+			],
+			'honorific-prefix' => [
 				'replace' => 'p-honorific-prefix'
-			),
-			'given-name' => array(
+			],
+			'given-name' => [
 				'replace' => 'p-given-name'
-			),
-			'additional-name' => array(
+			],
+			'additional-name' => [
 				'replace' => 'p-additional-name'
-			),
-			'family-name' => array(
+			],
+			'family-name' => [
 				'replace' => 'p-family-name'
-			),
-			'honorific-suffix' => array(
+			],
+			'honorific-suffix' => [
 				'replace' => 'p-honorific-suffix'
-			),
-			'nickname' => array(
+			],
+			'nickname' => [
 				'replace' => 'p-nickname'
-			),
-			'email' => array(
+			],
+			'email' => [
 				'replace' => 'u-email'
-			),
-			'logo' => array(
+			],
+			'logo' => [
 				'replace' => 'u-logo'
-			),
-			'photo' => array(
+			],
+			'photo' => [
 				'replace' => 'u-photo'
-			),
-			'url' => array(
+			],
+			'url' => [
 				'replace' => 'u-url'
-			),
-			'uid' => array(
+			],
+			'uid' => [
 				'replace' => 'u-uid'
-			),
-			'category' => array(
+			],
+			'category' => [
 				'replace' => 'p-category'
-			),
-			'adr' => array(
+			],
+			'adr' => [
 				'replace' => 'p-adr',
-			),
-			'extended-address' => array(
+			],
+			'extended-address' => [
 				'replace' => 'p-extended-address'
-			),
-			'street-address' => array(
+			],
+			'street-address' => [
 				'replace' => 'p-street-address'
-			),
-			'locality' => array(
+			],
+			'locality' => [
 				'replace' => 'p-locality'
-			),
-			'region' => array(
+			],
+			'region' => [
 				'replace' => 'p-region'
-			),
-			'postal-code' => array(
+			],
+			'postal-code' => [
 				'replace' => 'p-postal-code'
-			),
-			'country-name' => array(
+			],
+			'country-name' => [
 				'replace' => 'p-country-name'
-			),
-			'label' => array(
+			],
+			'label' => [
 				'replace' => 'p-label'
-			),
-			'geo' => array(
+			],
+			'geo' => [
 				'replace' => 'p-geo h-geo',
 				'context' => 'geo'
-			),
-			'latitude' => array(
+			],
+			'latitude' => [
 				'replace' => 'p-latitude'
-			),
-			'longitude' => array(
+			],
+			'longitude' => [
 				'replace' => 'p-longitude'
-			),
-			'tel' => array(
+			],
+			'tel' => [
 				'replace' => 'p-tel'
-			),
-			'note' => array(
+			],
+			'note' => [
 				'replace' => 'p-note'
-			),
-			'bday' => array(
+			],
+			'bday' => [
 				'replace' => 'dt-bday'
-			),
-			'key' => array(
+			],
+			'key' => [
 				'replace' => 'u-key'
-			),
-			'org' => array(
+			],
+			'org' => [
 				'replace' => 'p-org'
-			),
-			'organization-name' => array(
+			],
+			'organization-name' => [
 				'replace' => 'p-organization-name'
-			),
-			'organization-unit' => array(
+			],
+			'organization-unit' => [
 				'replace' => 'p-organization-unit'
-			),
-			'title' => array(
+			],
+			'title' => [
 				'replace' => 'p-job-title'
-			),
-			'role' => array(
+			],
+			'role' => [
 				'replace' => 'p-role'
-			),
-			'tz' => array(
+			],
+			'tz' => [
 				'replace' => 'p-tz'
-			),
-			'rev' => array(
+			],
+			'rev' => [
 				'replace' => 'dt-rev'
-			),
-		),
-		'hfeed' => array(
-			'author' => array(
+			],
+		],
+		'hfeed' => [
+			'author' => [
 				'replace' => 'p-author h-card',
 				'context' => 'vcard'
-			),
-			'url' => array(
+			],
+			'url' => [
 				'replace' => 'u-url'
-			),
-			'photo' => array(
+			],
+			'photo' => [
 				'replace' => 'u-photo'
-			),
-			'category' => array(
+			],
+			'category' => [
 				'replace' => 'p-category'
-			),
-		),
-		'hentry' => array(
-			'entry-title' => array(
+			],
+		],
+		'hentry' => [
+			'entry-title' => [
 				'replace' => 'p-name'
-			),
-			'entry-summary' => array(
+			],
+			'entry-summary' => [
 				'replace' => 'p-summary'
-			),
-			'entry-content' => array(
+			],
+			'entry-content' => [
 				'replace' => 'e-content'
-			),
-			'published' => array(
+			],
+			'published' => [
 				'replace' => 'dt-published'
-			),
-			'updated' => array(
+			],
+			'updated' => [
 				'replace' => 'dt-updated'
-			),
-			'author' => array(
+			],
+			'author' => [
 				'replace' => 'p-author h-card',
 				'context' => 'vcard',
-			),
-			'category' => array(
+			],
+			'category' => [
 				'replace' => 'p-category'
-			),
-		),
-		'hrecipe' => array(
-			'fn' => array(
+			],
+		],
+		'hrecipe' => [
+			'fn' => [
 				'replace' => 'p-name'
-			),
-			'ingredient' =>  array(
+			],
+			'ingredient' =>  [
 				'replace' => 'p-ingredient'
 				/**
 				 * TODO: hRecipe 'value' and 'type' child mf not parsing correctly currently.
 				 * Per http://microformats.org/wiki/hRecipe#Property_details, they're experimental.
 				 */
-			),
-			'yield' =>  array(
+			],
+			'yield' =>  [
 				'replace' => 'p-yield'
-			),
-			'instructions' =>  array(
+			],
+			'instructions' =>  [
 				'replace' => 'e-instructions'
-			),
-			'duration' =>  array(
+			],
+			'duration' =>  [
 				'replace' => 'dt-duration'
-			),
-			'photo' =>  array(
+			],
+			'photo' =>  [
 				'replace' => 'u-photo'
-			),
-			'summary' =>  array(
+			],
+			'summary' =>  [
 				'replace' => 'p-summary'
-			),
-			'author' =>  array(
+			],
+			'author' =>  [
 				'replace' => 'p-author h-card',
 				'context' => 'vcard',
-			),
-			'nutrition' =>  array(
+			],
+			'nutrition' =>  [
 				'replace' => 'p-nutrition'
-			),
-			'category' =>  array(
+			],
+			'category' =>  [
 				'replace' => 'p-category'
-			),
-		),
-		'hresume' => array(
-			'summary' => array(
+			],
+		],
+		'hresume' => [
+			'summary' => [
 				'replace' => 'p-summary'
-			),
-			'contact' => array(
+			],
+			'contact' => [
 				'replace' => 'p-contact h-card',
 				'context' => 'vcard',
-			),
-			'education' => array(
+			],
+			'education' => [
 				'replace' => 'p-education h-event',
 				'context' => 'vevent',
-			),
-			'experience' => array(
+			],
+			'experience' => [
 				'replace' => 'p-experience h-event',
 				'context' => 'vevent',
-			),
-			'skill' => array(
+			],
+			'skill' => [
 				'replace' => 'p-skill'
-			),
-			'affiliation' => array(
+			],
+			'affiliation' => [
 				'replace' => 'p-affiliation h-card',
 				'context' => 'vcard',
-			),
-		),
-		'vevent' => array(
-			'summary' => array(
+			],
+		],
+		'vevent' => [
+			'summary' => [
 				'replace' => 'p-name'
-			),
-			'dtstart' => array(
+			],
+			'dtstart' => [
 				'replace' => 'dt-start'
-			),
-			'dtend' => array(
+			],
+			'dtend' => [
 				'replace' => 'dt-end'
-			),
-			'duration' => array(
+			],
+			'duration' => [
 				'replace' => 'dt-duration'
-			),
-			'description' => array(
+			],
+			'description' => [
 				'replace' => 'p-description'
-			),
-			'url' => array(
+			],
+			'url' => [
 				'replace' => 'u-url'
-			),
-			'category' => array(
+			],
+			'category' => [
 				'replace' => 'p-category'
-			),
-			'location' => array(
+			],
+			'location' => [
 				'replace' => 'p-location',
-			),
-			'geo' => array(
+			],
+			'geo' => [
 				'replace' => 'p-location h-geo'
-			),
-			'attendee' => array(
+			],
+			'attendee' => [
 				'replace' => 'p-attendee h-card',
 				'context' => 'vcard'
-			)
-		),
-		'hreview' => array(
-			'summary' => array(
+			]
+		],
+		'hreview' => [
+			'summary' => [
 				'replace' => 'p-name'
-			),
+			],
 			# fn: see item.fn below
 			# photo: see item.photo below
 			# url: see item.url below
-			'item' => array(
+			'item' => [
 				'replace' => 'p-item h-item',
 				'context' => 'item'
-			),
+			],
 			# reviewer: see backcompat()
-			'dtreviewed' => array(
+			'dtreviewed' => [
 				'replace' => 'dt-published'
-			),
-			'rating' => array(
+			],
+			'rating' => [
 				'replace' => 'p-rating'
-			),
-			'best' => array(
+			],
+			'best' => [
 				'replace' => 'p-best'
-			),
-			'worst' => array(
+			],
+			'worst' => [
 				'replace' => 'p-worst'
-			),
-			'description' => array(
+			],
+			'description' => [
 				'replace' => 'e-content'
-			),
-			'category' => array(
+			],
+			'category' => [
 				'replace' => 'p-category'
-			),
-		),
-		'hreview-aggregate' => array(
-			'summary' => array(
+			],
+		],
+		'hreview-aggregate' => [
+			'summary' => [
 				'replace' => 'p-name'
-			),
+			],
 			# fn: see item.fn below
 			# photo: see item.photo below
 			# url: see item.url below
-			'item' => array(
+			'item' => [
 				'replace' => 'p-item h-item',
 				'context' => 'item'
-			),
-			'rating' => array(
+			],
+			'rating' => [
 				'replace' => 'p-rating'
-			),
-			'best' => array(
+			],
+			'best' => [
 				'replace' => 'p-best'
-			),
-			'worst' => array(
+			],
+			'worst' => [
 				'replace' => 'p-worst'
-			),
-			'average' => array(
+			],
+			'average' => [
 				'replace' => 'p-average'
-			),
-			'count' => array(
+			],
+			'count' => [
 				'replace' => 'p-count'
-			),
-			'votes' => array(
+			],
+			'votes' => [
 				'replace' => 'p-votes'
-			),
-		),
-		'hproduct' => array(
-			'fn' => array(
+			],
+		],
+		'hproduct' => [
+			'fn' => [
 				'replace' => 'p-name',
-			),
-			'photo' => array(
+			],
+			'photo' => [
 				'replace' => 'u-photo',
-			),
-			'brand' => array(
+			],
+			'brand' => [
 				'replace' => 'p-brand',
-			),
-			'category' => array(
+			],
+			'category' => [
 				'replace' => 'p-category',
-			),
-			'description' => array(
+			],
+			'description' => [
 				'replace' => 'p-description',
-			),
-			'identifier' => array(
+			],
+			'identifier' => [
 				'replace' => 'u-identifier',
-			),
-			'url' => array(
+			],
+			'url' => [
 				'replace' => 'u-url',
-			),
+			],
 			// review is handled in the special processing section to allow for 'review hreview-aggregate'
-			'price' => array(
+			'price' => [
 				'replace' => 'p-price'
-			),
-		),
-		'item' => array(
-			'fn' => array(
+			],
+		],
+		'item' => [
+			'fn' => [
 				'replace' => 'p-name'
-			),
-			'url' => array(
+			],
+			'url' => [
 				'replace' => 'u-url'
-			),
-			'photo' => array(
+			],
+			'photo' => [
 				'replace' => 'u-photo'
-			),
-		),
-		'adr' => array(
-			'post-office-box' => array(
+			],
+		],
+		'adr' => [
+			'post-office-box' => [
 				'replace' => 'p-post-office-box'
-			),
-			'extended-address' => array(
+			],
+			'extended-address' => [
 				'replace' => 'p-extended-address'
-			),
-			'street-address' => array(
+			],
+			'street-address' => [
 				'replace' => 'p-street-address'
-			),
-			'locality' => array(
+			],
+			'locality' => [
 				'replace' => 'p-locality'
-			),
-			'region' => array(
+			],
+			'region' => [
 				'replace' => 'p-region'
-			),
-			'postal-code' => array(
+			],
+			'postal-code' => [
 				'replace' => 'p-postal-code'
-			),
-			'country-name' => array(
+			],
+			'country-name' => [
 				'replace' => 'p-country-name'
-			),
-		),
-		'geo' => array(
-			'latitude' => array(
+			],
+		],
+		'geo' => [
+			'latitude' => [
 				'replace' => 'p-latitude'
-			),
-			'longitude' => array(
+			],
+			'longitude' => [
 				'replace' => 'p-longitude'
-			),
-		),
-	);
+			],
+		],
+	];
 }
 
 function parseUriToComponents($uri) {
-	$result = array(
+	$result = [
 		'scheme' => null,
 		'authority' => null,
 		'path' => null,
 		'query' => null,
 		'fragment' => null
-	);
+	];
 
 	$u = @parse_url($uri);
 
@@ -2238,13 +2238,13 @@ function parseUriToComponents($uri) {
 }
 
 function resolveUrl($baseURI, $referenceURI) {
-	$target = array(
+	$target = [
 		'scheme' => null,
 		'authority' => null,
 		'path' => null,
 		'query' => null,
 		'fragment' => null
-	);
+	];
 
 	# 5.2.1 Pre-parse the Base URI
 	# The base URI (Base) is established according to the procedure of

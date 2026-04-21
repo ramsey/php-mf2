@@ -237,12 +237,12 @@ EOT;
 END;
 		$output = Mf2\parse($input);
 
-		$u_urls = array(
+		$u_urls = [
 			'/2014/11/24/jump-rope',
 			'/2014/11/23/graffiti',
 			'/2014/11/21/earth',
 			'/2014/11/19/labor',
-		);
+		];
 
 		foreach ( $u_urls as $key => $url )
 		{

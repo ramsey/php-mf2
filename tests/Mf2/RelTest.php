@@ -181,7 +181,7 @@ class RelTest extends TestCase {
 <a href="#" rel="bookmark archived"></a>';
     $parser = new Parser($input);
     $output = $parser->parse();
-    $this->assertEquals($output['rel-urls']['#']['rels'], array('archived', 'bookmark', 'me'));
+    $this->assertEquals($output['rel-urls']['#']['rels'], ['archived', 'bookmark', 'me']);
   }
 
   public function testRelURLsInfoMergesCorrectly() {
@@ -202,7 +202,7 @@ class RelTest extends TestCase {
 <a href="#a" rel="a"></a>';
     $parser = new Parser($input);
     $output = $parser->parse();
-    $this->assertEquals($output['rels']['a'], array('#a', '#b'));
+    $this->assertEquals($output['rels']['a'], ['#a', '#b']);
   }
 
   public function testRelURLsFalsyTextVSEmpty() {

@@ -31,28 +31,28 @@ class ParserTest extends TestCase {
 	}
 
 	public function testMicroformatNameFromClassReturnsFullRootName() {
-		$expected = array('h-card');
+		$expected = ['h-card'];
 		$actual = Mf2\mfNamesFromClass('someclass h-card someotherclass', 'h-');
 
 		$this->assertEquals($expected, $actual);
 	}
 
 	public function testMicroformatNameFromClassHandlesMultipleHNames() {
-		$expected = array('h-card', 'h-person');
+		$expected = ['h-card', 'h-person'];
 		$actual = Mf2\mfNamesFromClass('someclass h-card someotherclass h-person yetanotherclass', 'h-');
 
 		$this->assertEquals($expected, $actual);
 	}
 
 	public function testMicroformatStripsPrefixFromPropertyClassname() {
-		$expected = array('name');
+		$expected = ['name'];
 		$actual = Mf2\mfNamesFromClass('someclass p-name someotherclass', 'p-');
 
 		$this->assertEquals($expected, $actual);
 	}
 
 	public function testNestedMicroformatPropertyNameWorks() {
-		$expected = array('location' => array('p-'), 'author' => array('u-', 'p-'));
+		$expected = ['location' => ['p-'], 'author' => ['u-', 'p-']];
 		$test = 'someclass p-location someotherclass u-author p-author';
 		$actual = Mf2\nestedMfPropertyNamesFromClass($test);
 
@@ -60,14 +60,14 @@ class ParserTest extends TestCase {
 	}
 
 	public function testMicroformatNamesFromClassIgnoresPrefixesWithoutNames() {
-		$expected = array();
+		$expected = [];
 		$actual = Mf2\mfNamesFromClass('someclass h- someotherclass', 'h-');
 
 		$this->assertEquals($expected, $actual);
 	}
 
 	public function testMicroformatNamesFromClassHandlesExcessiveWhitespace() {
-		$expected = array('h-card');
+		$expected = ['h-card'];
 		$actual = Mf2\mfNamesFromClass('  someclass
 				h-card 	 someotherclass		   	 ', 'h-');
 
@@ -75,7 +75,7 @@ class ParserTest extends TestCase {
 	}
 
 	public function testMicroformatNamesFromClassIgnoresUppercaseClassnames() {
-		$expected = array();
+		$expected = [];
 		$actual = Mf2\mfNamesFromClass('H-ENTRY', 'h-');
 
 		$this->assertEquals($expected, $actual);
@@ -812,7 +812,7 @@ END;
 		$input = '<div class="h-entry h-cite h-entry"></div>';
 		$output = Mf2\parse($input);
 
-		$this->assertEquals(array('h-cite', 'h-entry'), $output['items'][0]['type']);
+		$this->assertEquals(['h-cite', 'h-entry'], $output['items'][0]['type']);
 	}
 
 	/**
@@ -895,7 +895,7 @@ EOD;
 EOF;
 
 		$output = Mf2\parse($input);
-		$this->assertEquals(array('value' => '/image.jpg', 'alt' => 'Jon Doe'), $output['items'][0]['properties']['photo'][0]);
+		$this->assertEquals(['value' => '/image.jpg', 'alt' => 'Jon Doe'], $output['items'][0]['properties']['photo'][0]);
 	}
 
 	public function testGetRootMfOnlyFindsValidElements() {
