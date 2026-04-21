@@ -76,7 +76,7 @@ function fetch($url, $convertClassic = true, &$curlInfo=null) {
 	$info = $curlInfo = curl_getinfo($ch);
 	curl_close($ch);
 
-	if (strpos(strtolower($info['content_type']), 'html') === false) {
+	if (!str_contains(strtolower($info['content_type']), 'html')) {
 		// The content was not delivered as HTML, do not attempt to parse it.
 		return null;
 	}
@@ -136,7 +136,7 @@ function mfNamesFromClass($class, $prefix='h-') {
 	foreach ($classes as $classname) {
 		$compare_classname = ' ' . $classname;
 		$compare_prefix = ' ' . $prefix;
-		if (strstr($compare_classname, $compare_prefix) !== false && ($compare_classname != $compare_prefix)) {
+		if (str_contains($compare_classname, $compare_prefix) && ($compare_classname != $compare_prefix)) {
 			$matches[] = ($prefix === 'h-') ? $classname : substr($classname, strlen($prefix));
 		}
 	}
@@ -329,11 +329,6 @@ class Parser {
 	/** @var SplObjectStorage */
 	protected $parsed;
 
-	/**
-	 * @var bool
-	 */
-	public $jsonMode;
-
 	/** @var boolean Whether to include experimental language parsing in the result */
 	public $lang = false;
 
@@ -359,7 +354,7 @@ class Parser {
 	 * @param string $url The URL of the parsed document, for relative URL resolution
 	 * @param boolean $jsonMode Whether or not to use a stdClass instance for an empty `rels` dictionary. This breaks PHP looping over rels, but allows the output to be correctly serialized as JSON.
 	 */
-	public function __construct($input, $url = null, $jsonMode = false) {
+	public function __construct($input, $url = null, public $jsonMode = false) {
 		$emptyDocDefault = '<html><body></body></html>';
 		libxml_use_internal_errors(true);
 		if (is_string($input)) {
@@ -413,7 +408,6 @@ class Parser {
 		$this->doc = $doc;
 		$this->parsed = new SplObjectStorage();
 		$this->upgraded = new SplObjectStorage();
-		$this->jsonMode = $jsonMode;
 	}
 
 	private function elementPrefixParsed(\DOMElement $e, $prefix) {
@@ -2286,7 +2280,7 @@ function resolveUrl($baseURI, $referenceURI) {
 					$target['query'] = $base['query'];
 				}
 			} else {
-				if(substr($reference['path'], 0, 1) == '/') {
+				if(str_starts_with($reference['path'], '/')) {
 					$target['path'] = removeDotSegments($reference['path']);
 				} else {
 					$target['path'] = mergePaths($base, $reference);
@@ -2346,16 +2340,16 @@ function mergePaths($base, $reference) {
 
 # 5.2.4.A Remove leading ../ or ./
 function removeLeadingDotSlash(&$input) {
-	if(substr($input, 0, 3) == '../') {
+	if(str_starts_with($input, '../')) {
 		$input = substr($input, 3);
-	} elseif(substr($input, 0, 2) == './') {
+	} elseif(str_starts_with($input, './')) {
 		$input = substr($input, 2);
 	}
 }
 
 # 5.2.4.B Replace leading /. with /
 function removeLeadingSlashDot(&$input) {
-	if(substr($input, 0, 3) == '/./') {
+	if(str_starts_with($input, '/./')) {
 		$input = '/' . substr($input, 3);
 	} else {
 		$input = '/' . substr($input, 2);
@@ -2364,7 +2358,7 @@ function removeLeadingSlashDot(&$input) {
 
 # 5.2.4.C Given leading /../ remove component from output buffer
 function removeOneDirLevel(&$input, &$output) {
-	if(substr($input, 0, 4) == '/../') {
+	if(str_starts_with($input, '/../')) {
 		$input = '/' . substr($input, 4);
 	} else {
 		$input = '/' . substr($input, 3);
@@ -2383,7 +2377,7 @@ function removeLoneDotDot(&$input) {
 
 # 5.2.4.E Move one segment from input to output
 function moveOneSegmentFromInput(&$input, &$output) {
-	if(substr($input, 0, 1) != '/') {
+	if(!str_starts_with($input, '/')) {
 		$pos = strpos($input, '/');
 	} else {
 		$pos = strpos($input, '/', 1);
@@ -2412,16 +2406,16 @@ function removeDotSegments($path) {
 	while($input) {
 		$step++;
 
-		if(substr($input, 0, 3) == '../' || substr($input, 0, 2) == './') {
+		if(str_starts_with($input, '../') || str_starts_with($input, './')) {
 			#     A.  If the input buffer begins with a prefix of "../" or "./",
 			#         then remove that prefix from the input buffer; otherwise,
 			removeLeadingDotSlash($input);
-		} elseif(substr($input, 0, 3) == '/./' || $input == '/.') {
+		} elseif(str_starts_with($input, '/./') || $input == '/.') {
 			#     B.  if the input buffer begins with a prefix of "/./" or "/.",
 			#         where "." is a complete path segment, then replace that
 			#         prefix with "/" in the input buffer; otherwise,
 			removeLeadingSlashDot($input);
-		} elseif(substr($input, 0, 4) == '/../' || $input == '/..') {
+		} elseif(str_starts_with($input, '/../') || $input == '/..') {
 			#     C.  if the input buffer begins with a prefix of "/../" or "/..",
 			#          where ".." is a complete path segment, then replace that
 			#          prefix with "/" in the input buffer and remove the last
