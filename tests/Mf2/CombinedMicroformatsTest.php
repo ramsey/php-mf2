@@ -16,8 +16,6 @@ use Yoast\PHPUnitPolyfills\Polyfills\AssertIsType;
  * @todo implement
  */
 class CombinedMicroformatsTest extends TestCase {
-	use AssertIsType;
-
 	protected function set_up() {
 		date_default_timezone_set('Europe/London');
 	}

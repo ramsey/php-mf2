@@ -11,7 +11,9 @@
     ],
     "bin": ["bin/fetch-mf2", "bin/parse-mf2"],
     "require": {
-        "php": "^8.5"
+        "php": "^8.5",
+        "ext-dom": "*",
+        "ext-mbstring": "*"
     },
     "config": {
         "platform": {

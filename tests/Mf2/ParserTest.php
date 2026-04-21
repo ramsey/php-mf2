@@ -17,9 +17,6 @@ use Yoast\PHPUnitPolyfills\Polyfills\AssertStringContains;
  * Stuff for parsing E goes in here until there is enough of it to go elsewhere (like, never?)
  */
 class ParserTest extends TestCase {
-	use AssertIsType;
-	use AssertStringContains;
-
 	protected function set_up() {
 		date_default_timezone_set('Europe/London');
 	}
@@ -928,7 +925,7 @@ EOT;
 		$this->assertEquals('Page Title', $result['items'][0]['properties']['name'][0]);
 		$this->assertEquals('A summary so the p-name won\'t be implied. This test demonstrates p-name is not being parsed.', $result['items'][0]['properties']['summary'][0]);
 	}
-	
+
 	/**
 	 * @see https://github.com/microformats/php-mf2/issues/249
 	 */
