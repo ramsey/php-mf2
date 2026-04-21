@@ -368,7 +368,7 @@ EOT;
 	}
 
 	public function testApplyTransformationToSrcset() {
-		$transformation = (fn($url) => 'https://example.com/' . ltrim($url, '/'));
+		$transformation = (fn($url) => 'https://example.com/' . ltrim((string) $url, '/'));
 
 		// Example from https://developers.whatwg.org/edits.html#attr-img-srcset
 		$srcset = 'banner-HD.jpeg 2x, banner-phone.jpeg 100w, banner-phone-HD.jpeg 100w 2x';
@@ -390,7 +390,7 @@ EOT;
 
 		$this->assertArrayHasKey('photo', $mf['items'][0]['properties']);
 
-		$hostname = parse_url($mf['items'][0]['properties']['photo'][0], PHP_URL_HOST);
+		$hostname = parse_url((string) $mf['items'][0]['properties']['photo'][0], PHP_URL_HOST);
 		$this->assertEquals('aaronparecki.com', $hostname);
 
 		// previous assertion: not the photo URL changed over time

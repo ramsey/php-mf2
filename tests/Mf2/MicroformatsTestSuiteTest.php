@@ -45,7 +45,6 @@ final class TestSuiteParser extends \Mf2\Parser
         if (null === $this->__resolveChildUrls) {
             $reflectUpon = new \ReflectionClass($this);
             $this->__resolveChildUrls = $reflectUpon->getMethod('resolveChildUrls');
-            $this->__resolveChildUrls->setAccessible(true);
         }
         return $this->__resolveChildUrls->invoke($this, $element);
     }
@@ -61,7 +60,7 @@ class MicroformatsTestSuiteTest extends TestCase
     {
         $parser = new TestSuiteParser($input, 'http://example.com/');
         $this->assertEquals(
-            $this->makeComparible(json_decode($expectedOutput, true)),
+            $this->makeComparible(json_decode((string) $expectedOutput, true)),
             $this->makeComparible(json_decode(json_encode($parser->parse()), true))
         );
     }
@@ -78,7 +77,7 @@ class MicroformatsTestSuiteTest extends TestCase
 
         $parser = new TestSuiteParser($input, 'http://example.com/');
         $this->assertEquals(
-            $this->makeComparible(json_decode($expectedOutput, true)),
+            $this->makeComparible(json_decode((string) $expectedOutput, true)),
             $this->makeComparible(json_decode(json_encode($parser->parse()), true))
         );
     }
@@ -91,7 +90,7 @@ class MicroformatsTestSuiteTest extends TestCase
     {
         $parser = new TestSuiteParser($input, 'http://example.com/');
         $this->assertEquals(
-            $this->makeComparible(json_decode($expectedOutput, true)),
+            $this->makeComparible(json_decode((string) $expectedOutput, true)),
             $this->makeComparible(json_decode(json_encode($parser->parse()), true))
         );
     }
@@ -134,10 +133,10 @@ class MicroformatsTestSuiteTest extends TestCase
         // Build the array of separate tests:
         $tests = [];
         foreach ($finder as $key => $value) {
-            $dir = realpath(pathinfo($key, PATHINFO_DIRNAME));
-            $testname = substr($dir, strpos($dir, $subFolder) + strlen($subFolder) + 1) . '/' . pathinfo($key, PATHINFO_FILENAME);
-            $test = pathinfo($key, PATHINFO_BASENAME);
-            $result = pathinfo($key, PATHINFO_FILENAME) . '.json';
+            $dir = realpath(pathinfo((string) $key, PATHINFO_DIRNAME));
+            $testname = substr($dir, strpos($dir, $subFolder) + strlen($subFolder) + 1) . '/' . pathinfo((string) $key, PATHINFO_FILENAME);
+            $test = pathinfo((string) $key, PATHINFO_BASENAME);
+            $result = pathinfo((string) $key, PATHINFO_FILENAME) . '.json';
             if (is_file($dir . '/' . $result)) {
                 $tests[$testname] = [
                     'input' => file_get_contents($dir . '/' . $test),

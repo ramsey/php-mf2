@@ -76,7 +76,7 @@ function fetch($url, $convertClassic = true, &$curlInfo=null) {
 	$info = $curlInfo = curl_getinfo($ch);
 	curl_close($ch);
 
-	if (!str_contains(strtolower($info['content_type']), 'html')) {
+	if (!str_contains(strtolower((string) $info['content_type']), 'html')) {
 		// The content was not delivered as HTML, do not attempt to parse it.
 		return null;
 	}
@@ -137,7 +137,7 @@ function mfNamesFromClass($class, $prefix='h-') {
 		$compare_classname = ' ' . $classname;
 		$compare_prefix = ' ' . $prefix;
 		if (str_contains($compare_classname, $compare_prefix) && ($compare_classname != $compare_prefix)) {
-			$matches[] = ($prefix === 'h-') ? $classname : substr($classname, strlen($prefix));
+			$matches[] = ($prefix === 'h-') ? $classname : substr((string) $classname, strlen($prefix));
 		}
 	}
 
@@ -302,7 +302,7 @@ function applySrcsetUrlTransformation($srcset, $transformation) {
 		$parts[0] = call_user_func($transformation, $parts[0]);
 
 		return $parts[0] . (empty($parts[1]) ? '' : ' ' . $parts[1]);
-	}, explode(',', trim($srcset)))));
+	}, explode(',', trim((string) $srcset)))));
 }
 
 /**
@@ -385,7 +385,7 @@ class Parser {
 		foreach ($this->xpath->query('//base[@href]') as $base) {
 			$baseElementUrl = $base->getAttribute('href');
 
-			if (parse_url($baseElementUrl, PHP_URL_SCHEME) === null) {
+			if (parse_url((string) $baseElementUrl, PHP_URL_SCHEME) === null) {
 				/* The base element URL is relative to the document URL.
 				 *
 				 * :/
@@ -464,7 +464,7 @@ class Parser {
 			if ($child->hasAttribute('src'))
 				$child->setAttribute('src', $this->resolveUrl($child->getAttribute('src')));
 			if ($child->hasAttribute('srcset'))
-				$child->setAttribute('srcset', applySrcsetUrlTransformation($child->getAttribute('href'), [$this, 'resolveUrl']));
+				$child->setAttribute('srcset', applySrcsetUrlTransformation($child->getAttribute('href'), $this->resolveUrl(...)));
 			if ($child->hasAttribute('data'))
 				$child->setAttribute('data', $this->resolveUrl($child->getAttribute('data')));
 		}
@@ -481,7 +481,7 @@ class Parser {
 				return preg_replace(
 						'/(^[\t\n\f\r ]+| +(?=\n)|(?<=\n) +| +(?= )|[\t\n\f\r ]+$)/',
 						'',
-						$this->elementToString($element, $implied)
+						(string) $this->elementToString($element, $implied)
 				);
 	}
 	private function elementToString(DOMElement $input, $implied=false)
@@ -545,7 +545,7 @@ class Parser {
 			// we're at the <html> element and no lang; check <meta> http-equiv Content-Language
 			foreach ( $this->xpath->query('.//meta[@http-equiv]') as $node )
 			{
-				if ($node->hasAttribute('http-equiv') && $node->hasAttribute('content') && strtolower($node->getAttribute('http-equiv')) == 'content-language') {
+				if ($node->hasAttribute('http-equiv') && $node->hasAttribute('content') && strtolower((string) $node->getAttribute('http-equiv')) == 'content-language') {
 					return unicodeTrim($node->getAttribute('content'));
 				}
 			}
@@ -747,13 +747,13 @@ class Parser {
 			$timezonePart = '';
 			foreach ($dateParts as $part) {
 				// Is this part a full ISO8601 datetime?
-				if (preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:?\d{2})?$/', $part)) {
+				if (preg_match('/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:?\d{2})?$/', (string) $part)) {
 					// Break completely, we’ve got our value.
 					$dtValue = $part;
 					break;
 				} else {
 					// Is the current part a valid time(+TZ?) AND no other time representation has been found?
-					if ((preg_match('/^\d{1,2}:\d{2}(:\d{2})?(Z|[+-]\d{1,2}:?\d{2})?$/', $part) or preg_match('/^\d{1,2}(:\d{2})?(:\d{2})?[ap]\.?m\.?$/i', $part)) and empty($timePart)) {
+					if ((preg_match('/^\d{1,2}:\d{2}(:\d{2})?(Z|[+-]\d{1,2}:?\d{2})?$/', (string) $part) or preg_match('/^\d{1,2}(:\d{2})?(:\d{2})?[ap]\.?m\.?$/i', (string) $part)) and empty($timePart)) {
 						$timePart = $part;
 
 						$timezoneOffset = normalizeTimezoneOffset($timePart);
@@ -761,13 +761,13 @@ class Parser {
 							$impliedTimezone = $timezoneOffset;
 						}
 					// Is the current part a valid date AND no other date representation has been found?
-					} elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $part) and empty($datePart)) {
+					} elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $part) and empty($datePart)) {
 						$datePart = $part;
 					// Is the current part a valid ordinal date AND no other date representation has been found?
-					} elseif (preg_match('/^\d{4}-\d{3}$/', $part) and empty($datePart)) {
+					} elseif (preg_match('/^\d{4}-\d{3}$/', (string) $part) and empty($datePart)) {
 						$datePart = normalizeOrdinalDate($part);
 					// Is the current part a valid timezone offset AND no other timezone part has been found?
-					} elseif (preg_match('/^(Z|[+-]\d{1,2}:?(\d{2})?)$/', $part) and empty($timezonePart)) {
+					} elseif (preg_match('/^(Z|[+-]\d{1,2}:?(\d{2})?)$/', (string) $part) and empty($timezonePart)) {
 						$timezonePart = $part;
 
 						$timezoneOffset = normalizeTimezoneOffset($timezonePart);
@@ -794,11 +794,11 @@ class Parser {
 						$dtValue = unicodeTrim($timePart);
 					}
 					else if ( !empty($datePart) && empty($timePart) ) {
-						$dtValue = rtrim($datePart, 'T');
+						$dtValue = rtrim((string) $datePart, 'T');
 					}
 					else {
 						$timePart = convertTimeFormat($timePart);
-						$dtValue = rtrim($datePart, 'T') . ' ' . unicodeTrim($timePart);
+						$dtValue = rtrim((string) $datePart, 'T') . ' ' . unicodeTrim($timePart);
 					}
 				}
 			}
@@ -847,9 +847,9 @@ class Parser {
 			}
 
 			// if the dtValue is not just YYYY-MM-DD
-			if (!preg_match('/^(\d{4}-\d{2}-\d{2})$/', $dtValue)) {
+			if (!preg_match('/^(\d{4}-\d{2}-\d{2})$/', (string) $dtValue)) {
 				// no implied timezone set and dtValue has a TZ offset, use un-normalized TZ offset
-				preg_match('/Z|[+-]\d{1,2}:?(\d{2})?$/i', $dtValue, $matches);
+				preg_match('/Z|[+-]\d{1,2}:?(\d{2})?$/i', (string) $dtValue, $matches);
 				if (!$impliedTimezone && !empty($matches[0])) {
 					$impliedTimezone = $matches[0];
 				}
@@ -858,7 +858,7 @@ class Parser {
 			$dtValue = unicodeTrim($dtValue);
 
 			// Store the date part so that we can use it when assembling the final timestamp if the next one is missing a date part
-			if (preg_match('/(\d{4}-\d{2}-\d{2})/', $dtValue, $matches)) {
+			if (preg_match('/(\d{4}-\d{2}-\d{2})/', (string) $dtValue, $matches)) {
 				$dates[] = $matches[0];
 			}
 		}
@@ -867,7 +867,7 @@ class Parser {
 		 * if $dtValue is only a time and there are recently parsed dates,
 		 * form the full date-time using the most recently parsed dt- value
 		 */
-		if ((preg_match('/^\d{1,2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:?\d{2}?)?$/', $dtValue) or preg_match('/^\d{1,2}(:\d{2})?(:\d{2})?[ap]\.?m\.?$/i', $dtValue)) && !empty($dates)) {
+		if ((preg_match('/^\d{1,2}:\d{2}(:\d{2})?(Z|[+-]\d{2}:?\d{2}?)?$/', (string) $dtValue) or preg_match('/^\d{1,2}(:\d{2})?(:\d{2})?[ap]\.?m\.?$/i', (string) $dtValue)) && !empty($dates)) {
 			$timezoneOffset = normalizeTimezoneOffset($dtValue);
 			if (!$impliedTimezone && $timezoneOffset) {
 				$impliedTimezone = $timezoneOffset;
@@ -1259,7 +1259,7 @@ class Parser {
 		// Iterate through all a, area and link elements with rel attributes
 		foreach ($this->xpath->query('//a[@rel and @href] | //link[@rel and @href] | //area[@rel and @href]') as $hyperlink) {
 			// Parse the set of rels for the current link
-			$linkRels = array_unique(array_filter(preg_split('/[\t\n\f\r ]/', $hyperlink->getAttribute('rel'))));
+			$linkRels = array_unique(array_filter(preg_split('/[\t\n\f\r ]/', (string) $hyperlink->getAttribute('rel'))));
 			if (count($linkRels) === 0) {
 				continue;
 			}
@@ -1356,7 +1356,7 @@ class Parser {
 
 		if ( $rel_tag->length ) {
 			foreach ( $rel_tag as $tempEl ) {
-				$path = trim(parse_url($tempEl->getAttribute('href'), PHP_URL_PATH), ' /');
+				$path = trim(parse_url((string) $tempEl->getAttribute('href'), PHP_URL_PATH), ' /');
 				$segments = explode('/', $path);
 				$value = array_pop($segments);
 
@@ -2202,7 +2202,7 @@ function parseUriToComponents($uri) {
 		'fragment' => null
 	];
 
-	$u = @parse_url($uri);
+	$u = @parse_url((string) $uri);
 
 	if(array_key_exists('scheme', $u))
 		$result['scheme'] = $u['scheme'];
@@ -2280,7 +2280,7 @@ function resolveUrl($baseURI, $referenceURI) {
 					$target['query'] = $base['query'];
 				}
 			} else {
-				if(str_starts_with($reference['path'], '/')) {
+				if(str_starts_with((string) $reference['path'], '/')) {
 					$target['path'] = removeDotSegments($reference['path']);
 				} else {
 					$target['path'] = mergePaths($base, $reference);
@@ -2323,12 +2323,12 @@ function mergePaths($base, $reference) {
 		# reference's path; otherwise,
 		$merged = '/' . $reference['path'];
 	} else {
-		if(($pos=strrpos($base['path'], '/')) !== false) {
+		if(($pos=strrpos((string) $base['path'], '/')) !== false) {
 			# return a string consisting of the reference's path component
 			# appended to all but the last segment of the base URI's path (i.e.,
 			# excluding any characters after the right-most "/" in the base URI
 			# path,
-			$merged = substr($base['path'], 0, $pos + 1) . $reference['path'];
+			$merged = substr((string) $base['path'], 0, $pos + 1) . $reference['path'];
 		} else {
 			# or excluding the entire base URI path if it does not contain
 			# any "/" characters).
@@ -2340,55 +2340,55 @@ function mergePaths($base, $reference) {
 
 # 5.2.4.A Remove leading ../ or ./
 function removeLeadingDotSlash(&$input) {
-	if(str_starts_with($input, '../')) {
-		$input = substr($input, 3);
-	} elseif(str_starts_with($input, './')) {
-		$input = substr($input, 2);
+	if(str_starts_with((string) $input, '../')) {
+		$input = substr((string) $input, 3);
+	} elseif(str_starts_with((string) $input, './')) {
+		$input = substr((string) $input, 2);
 	}
 }
 
 # 5.2.4.B Replace leading /. with /
 function removeLeadingSlashDot(&$input) {
-	if(str_starts_with($input, '/./')) {
-		$input = '/' . substr($input, 3);
+	if(str_starts_with((string) $input, '/./')) {
+		$input = '/' . substr((string) $input, 3);
 	} else {
-		$input = '/' . substr($input, 2);
+		$input = '/' . substr((string) $input, 2);
 	}
 }
 
 # 5.2.4.C Given leading /../ remove component from output buffer
 function removeOneDirLevel(&$input, &$output) {
-	if(str_starts_with($input, '/../')) {
-		$input = '/' . substr($input, 4);
+	if(str_starts_with((string) $input, '/../')) {
+		$input = '/' . substr((string) $input, 4);
 	} else {
-		$input = '/' . substr($input, 3);
+		$input = '/' . substr((string) $input, 3);
 	}
-	$output = substr($output, 0, strrpos($output, '/'));
+	$output = substr((string) $output, 0, strrpos((string) $output, '/'));
 }
 
 # 5.2.4.D Remove . and .. if it's the only thing in the input
 function removeLoneDotDot(&$input) {
 	if($input == '.') {
-		$input = substr($input, 1);
+		$input = substr((string) $input, 1);
 	} else {
-		$input = substr($input, 2);
+		$input = substr((string) $input, 2);
 	}
 }
 
 # 5.2.4.E Move one segment from input to output
 function moveOneSegmentFromInput(&$input, &$output) {
-	if(!str_starts_with($input, '/')) {
-		$pos = strpos($input, '/');
+	if(!str_starts_with((string) $input, '/')) {
+		$pos = strpos((string) $input, '/');
 	} else {
-		$pos = strpos($input, '/', 1);
+		$pos = strpos((string) $input, '/', 1);
 	}
 
 	if($pos === false) {
 		$output .= $input;
 		$input = '';
 	} else {
-		$output .= substr($input, 0, $pos);
-		$input = substr($input, $pos);
+		$output .= substr((string) $input, 0, $pos);
+		$input = substr((string) $input, $pos);
 	}
 }
 
@@ -2406,16 +2406,16 @@ function removeDotSegments($path) {
 	while($input) {
 		$step++;
 
-		if(str_starts_with($input, '../') || str_starts_with($input, './')) {
+		if(str_starts_with((string) $input, '../') || str_starts_with((string) $input, './')) {
 			#     A.  If the input buffer begins with a prefix of "../" or "./",
 			#         then remove that prefix from the input buffer; otherwise,
 			removeLeadingDotSlash($input);
-		} elseif(str_starts_with($input, '/./') || $input == '/.') {
+		} elseif(str_starts_with((string) $input, '/./') || $input == '/.') {
 			#     B.  if the input buffer begins with a prefix of "/./" or "/.",
 			#         where "." is a complete path segment, then replace that
 			#         prefix with "/" in the input buffer; otherwise,
 			removeLeadingSlashDot($input);
-		} elseif(str_starts_with($input, '/../') || $input == '/..') {
+		} elseif(str_starts_with((string) $input, '/../') || $input == '/..') {
 			#     C.  if the input buffer begins with a prefix of "/../" or "/..",
 			#          where ".." is a complete path segment, then replace that
 			#          prefix with "/" in the input buffer and remove the last
