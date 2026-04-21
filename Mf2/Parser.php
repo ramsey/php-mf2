@@ -102,10 +102,10 @@ function unicodeToHtmlEntities($input) {
  * Collapses any sequences of whitespace within a string into a single space
  * character.
  *
- * @deprecated since v0.2.3
  * @param string $str
  * @return string
  */
+#[\Deprecated(message: 'since v0.2.3')]
 function collapseWhitespace($str) {
 	return preg_replace('/[\s|\n]+/', ' ', $str);
 }
@@ -1377,7 +1377,7 @@ class Parser {
 	 * @param DOMElement $context optionally specify an element from which to parse microformats
 	 * @return array An array containing all the microformats found in the current document
 	 */
-	public function parse($convertClassic = true, DOMElement $context = null) {
+	public function parse($convertClassic = true, ?DOMElement $context = null) {
 		$this->convertClassic = $convertClassic;
 		$mfs = $this->parse_recursive($context);
 
@@ -1405,7 +1405,7 @@ class Parser {
 	 * @param int $depth: recursion depth
 	 * @return array
 	 */
-	public function parse_recursive(DOMElement $context = null, $depth = 0) {
+	public function parse_recursive(?DOMElement $context = null, $depth = 0) {
 		$mfs = [];
 		$mfElements = $this->getRootMF($context);
 
@@ -1510,7 +1510,7 @@ class Parser {
 	 * @param DOMElement $context
 	 * @return DOMNodeList
 	 */
-	public function getRootMF(DOMElement $context = null) {
+	public function getRootMF(?DOMElement $context = null) {
 		// start with mf2 root class name xpath
 		$xpaths = [
 			'(php:function("\\Mf2\\classHasMf2RootClassname", normalize-space(@class)))'
