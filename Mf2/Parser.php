@@ -251,7 +251,7 @@ function convertTimeFormat($time) {
  * @return string
  */
 function normalizeOrdinalDate($dtValue) {
-	list($year, $day) = explode('-', $dtValue, 2);
+	[$year, $day] = explode('-', $dtValue, 2);
 	$day = intval($day);
 	if ($day < 367 && $day > 0) {
 		$date = \DateTime::createFromFormat('Y-z', $dtValue);
@@ -1388,7 +1388,7 @@ class Parser {
 		$mfs = $this->parse_recursive($context);
 
 		// Parse rels
-		list($rels, $rel_urls, $alternates) = $this->parseRelsAndAlternates();
+		[$rels, $rel_urls, $alternates] = $this->parseRelsAndAlternates();
 
 		$top = [
 			'items' => array_values(array_filter($mfs)),
