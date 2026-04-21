@@ -7,6 +7,7 @@ use Yoast\PHPUnitPolyfills\TestCases\TestCase;
 final class TestSuiteParser extends \Mf2\Parser
 {
     /** Actually textContent from before the whitespace normalisation merge (e8da04f93d548d26287a8980eca4216639cbc61d) */
+    #[\Override]
     public function textContent(\DOMElement $el, $dummy=false) {
         $excludeTags = ['noframe', 'noscript', 'script', 'style', 'frames', 'frameset'];
 
