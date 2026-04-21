@@ -1693,7 +1693,7 @@ class Parser {
 						// if the element has not been upgraded and we're not inside an mf2 root, recurse
 						if ( !$this->isElementUpgraded($propertyEl, $property) && !$isParentMf2 )
 						{
-							$temp_context = ( isset($data['context']) ) ? $data['context'] : null;
+							$temp_context = $data['context'] ?? null;
 							$this->backcompat($propertyEl, $temp_context, $hasRootMf2);
 							$this->addMfClasses($propertyEl, $data['replace']);
 						}
